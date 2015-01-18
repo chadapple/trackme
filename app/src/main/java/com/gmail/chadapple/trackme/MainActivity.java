@@ -1,11 +1,12 @@
 package com.gmail.chadapple.trackme;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
@@ -17,10 +18,24 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends FragmentActivity implements LocationService.LocationCallback {
   private GoogleMap mMap;
   private Marker mLocationMarker = null;
   static private final String TAG = "TrackMeMain";
+  private boolean mBound = false;
+
+  private ServiceConnection mServiceConnection = new ServiceConnection() {
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+      ((LocationService.LocationServiceBinder) binder).getService().registerCallback(MainActivity.this);
+      mBound = true;
+      Log.i(TAG, "Connected to LocationService");
+    }
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+      Log.i(TAG, "Disconnected to LocationService");
+    }
+  };
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -28,6 +43,24 @@ public class MainActivity extends FragmentActivity {
     setContentView(R.layout.main);
     setUpMap();
     startService(new Intent(this, LocationService.class));
+  }
+
+  @Override
+  protected void onStart() {
+    super.onStart();
+    // Bind to LocationService
+    Intent intent = new Intent(this, LocationService.class);
+    bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
+  }
+
+  @Override
+  protected void onStop() {
+    super.onStop();
+    // Unbind from the service
+    if (mBound) {
+      unbindService(mServiceConnection);
+      mBound = false;
+    }
   }
 
   @Override
@@ -50,42 +83,22 @@ public class MainActivity extends FragmentActivity {
     // Initialize map options
     mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
     mMap.getUiSettings().setZoomControlsEnabled(true);
-    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(40.058039, -84.136014), 14.0f));
+    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(40.058039, -84.136014), 10.0f));
     mMap.addMarker(new MarkerOptions().position(new LatLng(40.058039, -84.136014)).title("My house"));
-
-    // Acquire a reference to the system Location Manager
-    LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
-    // Define a listener that responds to location updates
-    LocationListener locationListener = new LocationListener() {
-      public void onLocationChanged(Location location) {
-        Log.i(TAG, "Location Change = " + location.toString());
-        makeUseOfNewLocation(location);
-      }
-      public void onStatusChanged(String provider, int status, Bundle extras) { Log.i(TAG, "Status Change"); }
-      public void onProviderEnabled(String provider) {
-        Log.i(TAG, "Provider Enable");
-      }
-      public void onProviderDisabled(String provider) {
-        Log.i(TAG, "Provider Disable");
-      }
-    };
-
-    // Register the listener with the Location Manager to receive location updates
-    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 15 * 1000, 0, locationListener);
-    //locationManager.removeUpdates(locationListener);
   }
 
-  ////////////////////////////////////////////////////////////////////////////////////////
-  // makeUseOfNewLocation()
-  ////////////////////////////////////////////////////////////////////////////////////////
-  void makeUseOfNewLocation(Location location) {
+  @Override
+  public void LocationChanged(Location location) {
     if (mLocationMarker != null) {
       mLocationMarker.remove();
     }
+    else {
+      // If this is the first update, zoom camera to location
+      mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 13.0f));
+    }
     mLocationMarker = mMap.addMarker(new MarkerOptions().
         position(new LatLng(location.getLatitude(), location.getLongitude())).
-        title("Current Location").
+        title("My Location").
         icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)).
         draggable(false));
   }
