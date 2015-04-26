@@ -37,7 +37,8 @@
         -->
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyCFFCjVY3U1BSAtSw8XA4AtWW_PhLM1TnM" />
+            android:value="AIzaSyBukXDfVrsT16dAaM1nZCqrUG1fJerIe0k" />
+        <!--android:value="AIzaSyCFFCjVY3U1BSAtSw8XA4AtWW_PhLM1TnM" />-->
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
