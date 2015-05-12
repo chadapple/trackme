@@ -41,8 +41,8 @@ import java.util.List;
 
 public class MainActivity extends FragmentActivity implements LocationService.LocationCallback {
   static private final String TAG = "TrackMeMain";
-  static private final String SERVER = "http://capple.no-ip.org";
-//  static private final String SERVER = "http://192.168.1.50";
+//  static private final String SERVER = "http://capple.no-ip.org";
+  static private final String SERVER = "http://192.168.1.50";
   static private final String SERVER_ROUTE_URL = SERVER + "/trackme/route.php";
   private GoogleMap mMap;
   private Marker mLocationMarker = null;

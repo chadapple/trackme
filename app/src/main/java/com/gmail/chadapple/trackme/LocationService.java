@@ -40,7 +40,7 @@ public class LocationService extends Service {
   private final String POINT_NAME = "name";
   private final String POINT_LAT = "lat";
   private final String POINT_LONG = "long";
-  private final String POINT_ALT = "alt";
+  private final String POINT_SPEED = "speed";
 
   // Define a listener that responds to location updates
   private LocationListener mLocationListener = new LocationListener() {
@@ -154,7 +154,7 @@ public class LocationService extends Service {
         String urlName = mServer + SERVER_POINTS_URL + "?" + POINT_NAME + "=" + mCurrentDateTime + "&" +
                 POINT_LAT + "=" + new Double(locations[0].getLatitude()).toString() + "&" +
                 POINT_LONG + "=" + new Double(locations[0].getLongitude()).toString() + "&" +
-                POINT_ALT + "=" + new Double(locations[0].getAltitude()).toString();
+                POINT_SPEED + "=" + new Double(locations[0].getSpeed()).toString();
         URL url = new URL(urlName);
         URLConnection urlconnection = url.openConnection();
         BufferedReader in = new BufferedReader(new InputStreamReader(
