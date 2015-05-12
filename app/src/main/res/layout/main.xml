@@ -28,7 +28,9 @@ https://developers.google.com/maps/documentation/android/map#using_xml_attribute
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="New ToggleButton"
-                android:id="@+id/toggleButton" />
+                android:id="@+id/toggleButton"
+                android:textOff="Not connected"
+                android:textOn="Not connected"/>
 
             <Spinner
                 android:layout_width="wrap_content"

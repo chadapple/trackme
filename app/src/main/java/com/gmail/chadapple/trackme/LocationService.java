@@ -19,6 +19,14 @@ public class LocationService extends Service {
   static private final String TAG = "LocationService";
   private final IBinder mBinder = new LocationServiceBinder();
   private LocationCallback mCallback = null;
+  private LocationServiceMode mMode = LocationServiceMode.NONE;
+
+  public enum LocationServiceMode
+  {
+    NONE,
+    MONITOR,
+    TRACK
+  }
 
   public interface LocationCallback {
     void LocationChanged(Location location);
@@ -91,5 +99,10 @@ public class LocationService extends Service {
     // Register the listener with the Location Manager to receive location updates
     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 15 * 1000, 0, locationListener);
     //locationManager.removeUpdates(locationListener);
+  }
+
+  public void setMode(LocationServiceMode m)
+  {
+    mMode = m;
   }
 }

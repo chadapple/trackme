@@ -11,8 +11,10 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.ToggleButton;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -24,14 +26,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,73 +34,80 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends FragmentActivity implements LocationService.LocationCallback {
+  static private final String TAG = "TrackMeMain";
   private GoogleMap mMap;
   private Marker mLocationMarker = null;
-  static private final String TAG = "TrackMeMain";
   private boolean mBound = false;
   private PolylineOptions mLineOptions = new PolylineOptions();
   private Polyline mPolyline = null;
+  private LocationService.LocationServiceBinder mLocationServiceBinder = null;
 
+  // ServiceConnection used for binding to LocationService
   private ServiceConnection mServiceConnection = new ServiceConnection() {
     @Override
     public void onServiceConnected(ComponentName name, IBinder binder) {
-      ((LocationService.LocationServiceBinder) binder).getService().registerCallback(MainActivity.this);
+      mLocationServiceBinder = ((LocationService.LocationServiceBinder) binder);
+      mLocationServiceBinder.getService().registerCallback(MainActivity.this);
       mBound = true;
+      // Wait until we're bound to the service to get the routes
+      // After we get the routes we'll call setupControls() which depends on this service being bound
+      new GetRoutes().execute();
       Log.i(TAG, "Connected to LocationService");
     }
     @Override
     public void onServiceDisconnected(ComponentName name) {
+      mLocationServiceBinder = null;
+      mBound = false;
       Log.i(TAG, "Disconnected to LocationService");
     }
   };
 
-  private class GetRoutes extends AsyncTask<String, String, String> {
-    InputStream inputStream = null;
-    String result = null;
-    protected String doInBackground(String... str) {
-//      String url_select = "http://capple.no-ip.org/trackme/route.php";
-      String url_select = "http://192.168.1.50/trackme/route.php";
-
+  // Background async task to get route names
+  private class GetRoutes extends AsyncTask<Void, Void, String> {
+    protected String doInBackground(Void...params) {
+      StringBuilder sBuilder = new StringBuilder();
+      String line;
       try {
-        URL url = new URL(url_select);
-        URLConnection urlconn = url.openConnection();
+//        URL url = new URL("http://capple.no-ip.org/trackme/route.php");
+        URL url = new URL("http://192.168.1.50/trackme/route.php");
+        URLConnection urlconnection = url.openConnection();
         BufferedReader in = new BufferedReader(new InputStreamReader(
-                urlconn.getInputStream()));
-        StringBuilder sBuilder = new StringBuilder();
-        String line = null;
+                urlconnection.getInputStream()));
+        // Read all lines from the URL stream
         while ((line = in.readLine()) != null) {
           sBuilder.append(line + "\n");
         }
-        result = sBuilder.toString();
         in.close();
-      } catch (IOException e1) {
-        Log.e("GetRoutes", e1.toString());
-        e1.printStackTrace();
+      } catch (IOException e) {
+        Log.e(TAG, e.toString());
+        e.printStackTrace();
       }
-      return result;
+      // String will get passed into onPostExecute
+      return sBuilder.toString();
     }
-    protected void onProgressUpdate(String... progress) {
+    protected void onProgressUpdate(Void...params) {
     }
     protected void onPostExecute(String result) {
-      //parse JSON data
+      // Parse JSON data
       try {
-        JSONArray points = new JSONArray(result);
+        JSONArray routes = new JSONArray(result);
         ArrayList<String> stringArrayList = new ArrayList<String>();
 
-        // looping through All Contacts
-        for (int i = 0; i < points.length(); i++) {
-          JSONObject c = points.getJSONObject(i);
+        // looping through routes, saving each name
+        for (int i = 0; i < routes.length(); i++) {
+          JSONObject c = routes.getJSONObject(i);
           stringArrayList.add(c.getString("name"));
         }
+        // Time to setup the spinner and toggle button controls
         setupControls(stringArrayList.toArray(new String[stringArrayList.size()]));
       } catch (JSONException e) {
+        Log.e(TAG, e.toString());
         e.printStackTrace();
       }
     }
@@ -117,7 +118,6 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
     setUpMap();
-    new GetRoutes().execute(new String("test"));
     startService(new Intent(this, LocationService.class));
   }
 
@@ -135,7 +135,6 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
     // Unbind from the service
     if (mBound) {
       unbindService(mServiceConnection);
-      mBound = false;
     }
   }
 
@@ -150,9 +149,33 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
     Spinner spinner = (Spinner) findViewById(R.id.spinner);
 
     // Application of the Array to the Spinner
-    ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, choices);
+    ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item, choices);
     spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); // The drop down view
     spinner.setAdapter(spinnerArrayAdapter);
+
+    // Setup the toggle button
+    final ToggleButton button = (ToggleButton) findViewById(R.id.toggleButton);
+    button.setText("Monitor");
+    button.setTextOff("Monitor");
+    button.setTextOn("Track");
+    // attach an OnClickListener
+    button.setOnClickListener(new View.OnClickListener()
+    {
+      @Override
+      public void onClick(View v)
+      {
+        if(mLocationServiceBinder != null) {
+          if (button.isChecked()) {
+            mLocationServiceBinder.getService().setMode(LocationService.LocationServiceMode.TRACK);
+          } else {
+            mLocationServiceBinder.getService().setMode(LocationService.LocationServiceMode.MONITOR);
+          }
+        }
+        else {
+          Log.i(TAG, "onClick, but not bound to location service");
+        }
+      }
+    });
   }
 
   private void setUpMap() {
@@ -161,13 +184,14 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
     }
     mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
     if (mMap == null) {
+      Log.e(TAG, "Error getting map fragment");
       return;
     }
     // Initialize map options
     mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
     mMap.getUiSettings().setZoomControlsEnabled(true);
     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(40.058039, -84.136014), 10.0f));
-    mMap.addMarker(new MarkerOptions().position(new LatLng(40.058039, -84.136014)).title("My house"));
+//    mMap.addMarker(new MarkerOptions().position(new LatLng(40.058039, -84.136014)).title("My house"));
     // Polyline will be used to draw a history of locations
     mLineOptions.color(Color.BLUE);
     mPolyline = mMap.addPolyline(mLineOptions);
