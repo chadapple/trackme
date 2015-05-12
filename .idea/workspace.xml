@@ -56,14 +56,14 @@
       <file leaf-file-name="MainActivity.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gmail/chadapple/trackme/MainActivity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="1.5044248" vertical-offset="2760" max-vertical-offset="3495">
-              <caret line="218" column="35" selection-start-line="218" selection-start-column="35" selection-end-line="218" selection-end-column="35" />
+            <state vertical-scroll-proportion="0.6666667" vertical-offset="2924" max-vertical-offset="3675">
+              <caret line="210" column="0" selection-start-line="210" selection-start-column="0" selection-end-line="210" selection-end-column="0" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#3798#3806#0" expanded="true" />
                 <element signature="e#5238#5246#0" expanded="true" />
-                <element signature="e#5720#6241#0" expanded="true" />
-                <element signature="e#6234#6235#0" expanded="true" />
+                <element signature="e#5720#6263#0" expanded="true" />
+                <element signature="e#6256#6257#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -1081,7 +1081,7 @@
     <property name="MemberChooser.showClasses" value="true" />
     <property name="MemberChooser.copyJavadoc" value="false" />
     <property name="recentsLimit" value="5" />
-    <property name="ANDROID_EXTENDED_DEVICE_CHOOSER_SERIALS" value="" />
+    <property name="ANDROID_EXTENDED_DEVICE_CHOOSER_SERIALS" value="emulator-5554" />
     <property name="ANDROID_EXTENDED_DEVICE_CHOOSER_AVD" value="Nexus_5_API_21" />
     <property name="FullScreen" value="true" />
     <property name="OverrideImplement.combined" value="true" />
@@ -1367,12 +1367,12 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/gmail/chadapple/trackme/MainActivity.java</url>
-          <line>206</line>
+          <line>213</line>
           <properties />
-          <option name="timeStamp" value="14" />
+          <option name="timeStamp" value="31" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="30" />
+      <option name="time" value="32" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -1392,8 +1392,8 @@
             <element signature="imports" expanded="true" />
             <element signature="e#3798#3806#0" expanded="true" />
             <element signature="e#5238#5246#0" expanded="true" />
-            <element signature="e#5720#6241#0" expanded="true" />
-            <element signature="e#6234#6235#0" expanded="true" />
+            <element signature="e#5720#6263#0" expanded="true" />
+            <element signature="e#6256#6257#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1435,8 +1435,8 @@
             <element signature="imports" expanded="true" />
             <element signature="e#3798#3806#0" expanded="true" />
             <element signature="e#5238#5246#0" expanded="true" />
-            <element signature="e#5720#6241#0" expanded="true" />
-            <element signature="e#6234#6235#0" expanded="true" />
+            <element signature="e#5720#6263#0" expanded="true" />
+            <element signature="e#6256#6257#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1485,8 +1485,8 @@
             <element signature="imports" expanded="true" />
             <element signature="e#3798#3806#0" expanded="true" />
             <element signature="e#5238#5246#0" expanded="true" />
-            <element signature="e#5720#6241#0" expanded="true" />
-            <element signature="e#6234#6235#0" expanded="true" />
+            <element signature="e#5720#6263#0" expanded="true" />
+            <element signature="e#6256#6257#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1517,8 +1517,8 @@
             <element signature="imports" expanded="true" />
             <element signature="e#3798#3806#0" expanded="true" />
             <element signature="e#5238#5246#0" expanded="true" />
-            <element signature="e#5720#6241#0" expanded="true" />
-            <element signature="e#6234#6235#0" expanded="true" />
+            <element signature="e#5720#6263#0" expanded="true" />
+            <element signature="e#6256#6257#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1549,8 +1549,8 @@
             <element signature="imports" expanded="true" />
             <element signature="e#3798#3806#0" expanded="true" />
             <element signature="e#5238#5246#0" expanded="true" />
-            <element signature="e#5720#6241#0" expanded="true" />
-            <element signature="e#6234#6235#0" expanded="true" />
+            <element signature="e#5720#6263#0" expanded="true" />
+            <element signature="e#6256#6257#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1581,8 +1581,8 @@
             <element signature="imports" expanded="true" />
             <element signature="e#3798#3806#0" expanded="true" />
             <element signature="e#5238#5246#0" expanded="true" />
-            <element signature="e#5720#6241#0" expanded="true" />
-            <element signature="e#6234#6235#0" expanded="true" />
+            <element signature="e#5720#6263#0" expanded="true" />
+            <element signature="e#6256#6257#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1613,8 +1613,8 @@
             <element signature="imports" expanded="true" />
             <element signature="e#3798#3806#0" expanded="true" />
             <element signature="e#5238#5246#0" expanded="true" />
-            <element signature="e#5720#6241#0" expanded="true" />
-            <element signature="e#6234#6235#0" expanded="true" />
+            <element signature="e#5720#6263#0" expanded="true" />
+            <element signature="e#6256#6257#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1795,14 +1795,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gmail/chadapple/trackme/MainActivity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.5044248" vertical-offset="2760" max-vertical-offset="3495">
-          <caret line="218" column="35" selection-start-line="218" selection-start-column="35" selection-end-line="218" selection-end-column="35" />
+        <state vertical-scroll-proportion="0.6666667" vertical-offset="2924" max-vertical-offset="3675">
+          <caret line="210" column="0" selection-start-line="210" selection-start-column="0" selection-end-line="210" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#3798#3806#0" expanded="true" />
             <element signature="e#5238#5246#0" expanded="true" />
-            <element signature="e#5720#6241#0" expanded="true" />
-            <element signature="e#6234#6235#0" expanded="true" />
+            <element signature="e#5720#6263#0" expanded="true" />
+            <element signature="e#6256#6257#0" expanded="true" />
           </folding>
         </state>
       </provider>

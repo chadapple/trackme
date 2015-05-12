@@ -165,6 +165,7 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
       public void onClick(View v)
       {
         if(mLocationServiceBinder != null) {
+          clearMap();
           if (button.isChecked()) {
             mLocationServiceBinder.getService().setMode(LocationService.LocationServiceMode.TRACK);
           } else {
@@ -195,6 +196,17 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
     // Polyline will be used to draw a history of locations
     mLineOptions.color(Color.BLUE);
     mPolyline = mMap.addPolyline(mLineOptions);
+  }
+
+  private void clearMap() {
+    mMap.clear();
+    if (mLocationMarker != null) {
+      mLocationMarker.remove();
+      mLocationMarker = null;
+    }
+    mLineOptions = new PolylineOptions();
+    mPolyline = mMap.addPolyline(mLineOptions);
+    mPolyline.setPoints(mLineOptions.getPoints());
   }
 
   @Override
