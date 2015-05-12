@@ -41,6 +41,9 @@ import java.util.List;
 
 public class MainActivity extends FragmentActivity implements LocationService.LocationCallback {
   static private final String TAG = "TrackMeMain";
+  static private final String SERVER = "http://capple.no-ip.org";
+//  static private final String SERVER = "http://192.168.1.50";
+  static private final String SERVER_ROUTE_URL = SERVER + "/trackme/route.php";
   private GoogleMap mMap;
   private Marker mLocationMarker = null;
   private boolean mBound = false;
@@ -54,6 +57,7 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
     public void onServiceConnected(ComponentName name, IBinder binder) {
       mLocationServiceBinder = ((LocationService.LocationServiceBinder) binder);
       mLocationServiceBinder.getService().registerCallback(MainActivity.this);
+      mLocationServiceBinder.getService().setServer(SERVER);
       mBound = true;
       // Wait until we're bound to the service to get the routes
       // After we get the routes we'll call setupControls() which depends on this service being bound
@@ -74,8 +78,7 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
       StringBuilder sBuilder = new StringBuilder();
       String line;
       try {
-//        URL url = new URL("http://capple.no-ip.org/trackme/route.php");
-        URL url = new URL("http://192.168.1.50/trackme/route.php");
+        URL url = new URL(SERVER_ROUTE_URL);
         URLConnection urlconnection = url.openConnection();
         BufferedReader in = new BufferedReader(new InputStreamReader(
                 urlconnection.getInputStream()));
