@@ -12,6 +12,7 @@ import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.ToggleButton;
@@ -32,12 +33,14 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends FragmentActivity implements LocationService.LocationCallback {
   static private final String TAG = "TrackMeMain";
@@ -121,7 +124,8 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
     setUpMap();
-    startService(new Intent(this, LocationService.class));
+    if(!mBound)
+      startService(new Intent(this, LocationService.class));
   }
 
   @Override
@@ -149,12 +153,26 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
 
   private void setupControls(String[] choices) {
     // Selection of the spinner
-    Spinner spinner = (Spinner) findViewById(R.id.spinner);
+    final Spinner spinner = (Spinner) findViewById(R.id.spinner);
 
     // Application of the Array to the Spinner
-    ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item, choices);
+    final ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item, choices);
     spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); // The drop down view
     spinner.setAdapter(spinnerArrayAdapter);
+    spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+    {
+      public void onItemSelected(AdapterView<?> arg0, View v, int position, long id)
+      {
+        clearMap();
+        String selectedRoute = arg0.getItemAtPosition(position).toString();
+        mLocationServiceBinder.getService().setMode(LocationService.LocationServiceMode.MONITOR, selectedRoute);
+      }
+
+      public void onNothingSelected(AdapterView<?> arg0)
+      {
+        Log.v(TAG, "nothing selected");
+      }
+    });
 
     // Setup the toggle button
     final ToggleButton button = (ToggleButton) findViewById(R.id.toggleButton);
@@ -170,9 +188,13 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
         if(mLocationServiceBinder != null) {
           clearMap();
           if (button.isChecked()) {
-            mLocationServiceBinder.getService().setMode(LocationService.LocationServiceMode.TRACK);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmm", Locale.US);
+            String routeName = sdf.format(new Date());
+            mLocationServiceBinder.getService().setMode(LocationService.LocationServiceMode.TRACK, routeName);
+            spinner.setEnabled(false);
           } else {
-            mLocationServiceBinder.getService().setMode(LocationService.LocationServiceMode.MONITOR);
+            mLocationServiceBinder.getService().setMode(LocationService.LocationServiceMode.MONITOR, spinner.getSelectedItem().toString());
+            spinner.setEnabled(true);
           }
         }
         else {
@@ -195,7 +217,6 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
     mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
     mMap.getUiSettings().setZoomControlsEnabled(true);
     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(40.058039, -84.136014), 10.0f));
-//    mMap.addMarker(new MarkerOptions().position(new LatLng(40.058039, -84.136014)).title("My house"));
     // Polyline will be used to draw a history of locations
     mLineOptions.color(Color.BLUE);
     mPolyline = mMap.addPolyline(mLineOptions);
@@ -220,13 +241,13 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
       mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(ll, 13.0f));
     }
     List<LatLng> points = mLineOptions.getPoints();
-    float[] distance = new float[] {10000.0f};
-    if(!points.isEmpty()) {
-      LatLng lastPoint = points.get(points.size()-1);
-      Location.distanceBetween(lastPoint.latitude, lastPoint.longitude, ll.latitude, ll.longitude, distance);
-    }
-    // If moved a significant amount of distance, add a polyline and move the marker
-    if(distance[0] > 100.0f) {
+//    float[] distance = new float[] {10000.0f};
+//    if(!points.isEmpty()) {
+//      LatLng lastPoint = points.get(points.size()-1);
+//      Location.distanceBetween(lastPoint.latitude, lastPoint.longitude, ll.latitude, ll.longitude, distance);
+//    }
+//    // If moved a significant amount of distance, add a polyline and move the marker
+//    if(distance[0] > 100.0f) {
       if (mLocationMarker != null) {
         mLocationMarker.remove();
       }
@@ -237,6 +258,6 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
               title("Current Location").
               icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)).
               draggable(false));
-    }
+//    }
   }
 }

@@ -10,7 +10,6 @@ import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.RemoteException;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -18,7 +17,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -34,9 +32,10 @@ public class LocationService extends Service {
   private final IBinder mBinder = new LocationServiceBinder();
   private LocationCallback mCallback = null;
   private LocationServiceMode mMode = LocationServiceMode.NONE;
-  private String mCurrentDateTime = null;
+  private String mCurrentRouteName = null;
   private String mServer = null;
   private final String SERVER_POINTS_URL = "/trackme/insertPoint.php";
+  private final String SERVER_ROUTE_URL = "/trackme/route.php";
   private final String POINT_NAME = "name";
   private final String POINT_LAT = "lat";
   private final String POINT_LONG = "long";
@@ -121,22 +120,27 @@ public class LocationService extends Service {
   public void onCreate() {
   }
 
-  public void setMode(LocationServiceMode m)
+  public LocationServiceMode getMode()
+  {
+    return mMode;
+  }
+
+  public void setMode(LocationServiceMode m, String routeName)
   {
     mMode = m;
+    mCurrentRouteName = routeName;
 
     // Acquire a reference to the system Location Manager
     LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
     if(mMode == LocationServiceMode.TRACK)
     {
-      SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US);
-      mCurrentDateTime = sdf.format(new Date());
       // Register the listener with the Location Manager to receive location updates
-      locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 15 * 1000, 0, mLocationListener);
+      locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5 * 1000, 0, mLocationListener);
     }
     else if(mMode == LocationServiceMode.MONITOR)
     {
       locationManager.removeUpdates(mLocationListener);
+      new GetPoints().execute();
     }
   }
 
@@ -151,7 +155,7 @@ public class LocationService extends Service {
       StringBuilder sBuilder = new StringBuilder();
       String line;
       try {
-        String urlName = mServer + SERVER_POINTS_URL + "?" + POINT_NAME + "=" + mCurrentDateTime + "&" +
+        String urlName = mServer + SERVER_POINTS_URL + "?" + POINT_NAME + "=" + mCurrentRouteName + "&" +
                 POINT_LAT + "=" + new Double(locations[0].getLatitude()).toString() + "&" +
                 POINT_LONG + "=" + new Double(locations[0].getLongitude()).toString() + "&" +
                 POINT_SPEED + "=" + new Double(locations[0].getSpeed()).toString();
@@ -170,7 +174,11 @@ public class LocationService extends Service {
       }
       // String will get passed into onPostExecute
       String result = sBuilder.toString();
-      if(!result.startsWith("Success"))
+      if(result.startsWith("Success"))
+      {
+        Log.i(TAG, "Sent location to server");
+      }
+      else
       {
         Log.i(TAG, "Error sending location to server");
       }
@@ -182,4 +190,52 @@ public class LocationService extends Service {
     }
   }
 
+  // Background async task to get route names
+  private class GetPoints extends AsyncTask<Void, Void, String> {
+    protected String doInBackground(Void...params) {
+      StringBuilder sBuilder = new StringBuilder();
+      String line;
+      try {
+        String urlName = mServer + SERVER_ROUTE_URL + "?" + POINT_NAME + "=" + mCurrentRouteName;
+        URL url = new URL(urlName);
+        URLConnection urlconnection = url.openConnection();
+        BufferedReader in = new BufferedReader(new InputStreamReader(
+                urlconnection.getInputStream()));
+        // Read all lines from the URL stream
+        while ((line = in.readLine()) != null) {
+          sBuilder.append(line + "\n");
+        }
+        in.close();
+
+      } catch (IOException e) {
+        Log.e(TAG, e.toString());
+        e.printStackTrace();
+      }
+      return sBuilder.toString();
+    }
+    protected void onProgressUpdate(Void...params) {
+    }
+    protected void onPostExecute(String result) {
+      try {
+        JSONArray points = new JSONArray(result);
+
+        // looping through points on route
+        for (int i = 0; i < points.length(); i++) {
+          JSONObject c = points.getJSONObject(i);
+          Location l = new Location("");  // provider is unnecessary
+          l.setLatitude(Double.parseDouble(c.getString("latitude")));
+          l.setLongitude(Double.parseDouble(c.getString("longitude")));
+          l.setSpeed(Float.parseFloat(c.getString("speed")));
+          if (mCallback != null && mMode == LocationServiceMode.MONITOR) {
+            mCallback.LocationChanged(l);
+          }
+        }
+      }
+      catch (JSONException e) {
+        Log.e(TAG, e.toString());
+        e.printStackTrace();
+      }
+
+    }
+  }
 }
