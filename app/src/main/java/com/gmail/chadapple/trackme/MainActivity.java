@@ -21,6 +21,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -248,24 +249,27 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
       // If this is the first update, zoom camera to location
       mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(ll, 13.0f));
     }
-    List<LatLng> points = mLineOptions.getPoints();
-//    float[] distance = new float[] {10000.0f};
-//    if(!points.isEmpty()) {
-//      LatLng lastPoint = points.get(points.size()-1);
-//      Location.distanceBetween(lastPoint.latitude, lastPoint.longitude, ll.latitude, ll.longitude, distance);
-//    }
-//    // If moved a significant amount of distance, add a polyline and move the marker
-//    if(distance[0] > 100.0f) {
-      if (mLocationMarker != null) {
-        mLocationMarker.remove();
-      }
-      mLineOptions.add(ll);
-      mPolyline.setPoints(mLineOptions.getPoints());
-      mLocationMarker = mMap.addMarker(new MarkerOptions().
-              position(ll).
-              title("Current Location").
-              icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)).
-              draggable(false));
-//    }
+    if (mLocationMarker != null) {
+      mLocationMarker.remove();
+    }
+    mLineOptions.add(ll);
+    mPolyline.setPoints(mLineOptions.getPoints());
+    String speedStr;
+    if(location.getSpeed() > 0) {
+      // Convert m/s to min/mile
+      double speed = 1609.344 / 60 / location.getSpeed();
+      int speedMin = (int) speed;
+      int speedSec = (int) ((speed - (double) speedMin) * 60);
+      speedStr = "Pace " + new Integer(speedMin).toString() + ":" + new Integer(speedSec).toString() + " min/mi";
+    }
+    else {
+      speedStr = "Stopped";
+    }
+    mLocationMarker = mMap.addMarker(new MarkerOptions().
+            position(ll).
+            title(speedStr).
+            icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)).
+            draggable(false));
+    mMap.animateCamera(CameraUpdateFactory.newLatLng(ll));
   }
 }
