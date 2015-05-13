@@ -44,8 +44,7 @@ import java.util.Locale;
 
 public class MainActivity extends FragmentActivity implements LocationService.LocationCallback {
   static private final String TAG = "TrackMeMain";
-//  static private final String SERVER = "http://capple.no-ip.org";
-  static private final String SERVER = "http://192.168.1.50";
+  static private final String SERVER = "http://capple.no-ip.org";
   static private final String SERVER_ROUTE_URL = SERVER + "/trackme/route.php";
   private GoogleMap mMap;
   private Marker mLocationMarker = null;
@@ -111,7 +110,7 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
           stringArrayList.add(c.getString("name"));
         }
         // Time to setup the spinner and toggle button controls
-        setupControls(stringArrayList.toArray(new String[stringArrayList.size()]));
+        setupControls(stringArrayList);
       } catch (JSONException e) {
         Log.e(TAG, e.toString());
         e.printStackTrace();
@@ -139,19 +138,23 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
   @Override
   protected void onStop() {
     super.onStop();
+  }
+
+  @Override
+  protected void onResume() {
+    super.onResume();
+  }
+
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
     // Unbind from the service
     if (mBound) {
       unbindService(mServiceConnection);
     }
   }
 
-  @Override
-  protected void onResume() {
-    super.onResume();
-    setUpMap();
-  }
-
-  private void setupControls(String[] choices) {
+  private void setupControls(List<String> choices) {
     // Selection of the spinner
     final Spinner spinner = (Spinner) findViewById(R.id.spinner);
 
@@ -191,6 +194,11 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmm", Locale.US);
             String routeName = sdf.format(new Date());
             mLocationServiceBinder.getService().setMode(LocationService.LocationServiceMode.TRACK, routeName);
+            if(spinnerArrayAdapter.getItem(0).compareTo(routeName) != 0) {
+              spinnerArrayAdapter.insert(routeName, 0);
+              spinnerArrayAdapter.notifyDataSetChanged();
+              spinner.setSelection(0);
+            }
             spinner.setEnabled(false);
           } else {
             mLocationServiceBinder.getService().setMode(LocationService.LocationServiceMode.MONITOR, spinner.getSelectedItem().toString());
