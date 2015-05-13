@@ -231,7 +231,8 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
     mPolyline = mMap.addPolyline(mLineOptions);
   }
 
-  private void clearMap() {
+  @Override
+  public void clearMap() {
     mMap.clear();
     if (mLocationMarker != null) {
       mLocationMarker.remove();

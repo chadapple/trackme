@@ -9,6 +9,7 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -34,12 +35,28 @@ public class LocationService extends Service {
   private LocationServiceMode mMode = LocationServiceMode.NONE;
   private String mCurrentRouteName = null;
   private String mServer = null;
+  private Handler mHandler = new Handler();
   private final String SERVER_POINTS_URL = "/trackme/insertPoint.php";
   private final String SERVER_ROUTE_URL = "/trackme/route.php";
   private final String POINT_NAME = "name";
   private final String POINT_LAT = "lat";
   private final String POINT_LONG = "long";
   private final String POINT_SPEED = "speed";
+
+  // Periodic task to update the map when in Monitor mode
+  private Runnable mUpdateMonitor = new Runnable() {
+    @Override
+    public void run() {
+      if(mMode == LocationServiceMode.MONITOR) {
+        if(mCallback != null && mMode == LocationServiceMode.MONITOR)
+        {
+          mCallback.clearMap();
+          new GetPoints().execute();
+        }
+      }
+      mHandler.postDelayed(mUpdateMonitor, 60000);  // every 1 minute
+    }
+  };
 
   // Define a listener that responds to location updates
   private LocationListener mLocationListener = new LocationListener() {
@@ -73,6 +90,7 @@ public class LocationService extends Service {
 
   public interface LocationCallback {
     void LocationChanged(Location location);
+    void clearMap();
   }
   public class LocationServiceBinder extends Binder {
     LocationService getService() { return LocationService.this; }
@@ -118,6 +136,7 @@ public class LocationService extends Service {
    */
   @Override
   public void onCreate() {
+    mUpdateMonitor.run();
   }
 
   public LocationServiceMode getMode()
@@ -235,7 +254,6 @@ public class LocationService extends Service {
         Log.e(TAG, e.toString());
         e.printStackTrace();
       }
-
     }
   }
 }
