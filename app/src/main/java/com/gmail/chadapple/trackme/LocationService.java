@@ -36,12 +36,14 @@ public class LocationService extends Service {
   private String mCurrentRouteName = null;
   private String mServer = null;
   private Handler mHandler = new Handler();
+  private String mLastId = null;
   private final String SERVER_POINTS_URL = "/trackme/insertPoint.php";
   private final String SERVER_ROUTE_URL = "/trackme/route.php";
   private final String POINT_NAME = "name";
   private final String POINT_LAT = "lat";
   private final String POINT_LONG = "long";
   private final String POINT_SPEED = "speed";
+  private final String POINT_ID = "id";
 
   // Periodic task to update the map when in Monitor mode
   private Runnable mUpdateMonitor = new Runnable() {
@@ -50,7 +52,6 @@ public class LocationService extends Service {
       if(mMode == LocationServiceMode.MONITOR) {
         if(mCallback != null && mMode == LocationServiceMode.MONITOR)
         {
-          mCallback.clearMap();
           new GetPoints().execute();
         }
       }
@@ -148,6 +149,7 @@ public class LocationService extends Service {
   {
     mMode = m;
     mCurrentRouteName = routeName;
+    mLastId = null;
 
     // Acquire a reference to the system Location Manager
     LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -215,7 +217,11 @@ public class LocationService extends Service {
       StringBuilder sBuilder = new StringBuilder();
       String line;
       try {
-        String urlName = mServer + SERVER_ROUTE_URL + "?" + POINT_NAME + "=" + mCurrentRouteName;
+        String urlName = mServer + SERVER_ROUTE_URL +
+                "?" + POINT_NAME + "=" + mCurrentRouteName;
+        if(mLastId != null) {
+          urlName = urlName + "&" + POINT_ID + "=" + mLastId;
+        }
         URL url = new URL(urlName);
         URLConnection urlconnection = url.openConnection();
         BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -245,6 +251,7 @@ public class LocationService extends Service {
           l.setLatitude(Double.parseDouble(c.getString("latitude")));
           l.setLongitude(Double.parseDouble(c.getString("longitude")));
           l.setSpeed(Float.parseFloat(c.getString("speed")));
+          mLastId = c.getString("id");
           if (mCallback != null && mMode == LocationServiceMode.MONITOR) {
             mCallback.LocationChanged(l);
           }
