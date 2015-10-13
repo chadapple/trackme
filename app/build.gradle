@@ -1,19 +1,26 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'TrackMeApp'
+            storeFile file('/Users/chadapple/Documents/Android/keystore.jks')
+            keyPassword 'opengym'
+            storePassword 'opengym'
+        }
+    }
     compileSdkVersion 17
     buildToolsVersion "21.1.2"
-
     defaultConfig {
         applicationId "com.gmail.chadapple.trackme"
         minSdkVersion 17
         targetSdkVersion 17
     }
-
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            signingConfig signingConfigs.config
         }
     }
 }

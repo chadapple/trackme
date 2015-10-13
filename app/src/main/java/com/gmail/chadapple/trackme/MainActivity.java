@@ -8,13 +8,16 @@ import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -65,13 +68,11 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
       // Wait until we're bound to the service to get the routes
       // After we get the routes we'll call setupControls() which depends on this service being bound
       new GetRoutes().execute();
-      Log.i(TAG, "Connected to LocationService");
     }
     @Override
     public void onServiceDisconnected(ComponentName name) {
       mLocationServiceBinder = null;
       mBound = false;
-      Log.i(TAG, "Disconnected to LocationService");
     }
   };
 
@@ -126,14 +127,14 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
     setUpMap();
     if(!mBound)
       startService(new Intent(this, LocationService.class));
+      // Bind to LocationService
+      Intent intent = new Intent(this, LocationService.class);
+      bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
   }
 
   @Override
   protected void onStart() {
     super.onStart();
-    // Bind to LocationService
-    Intent intent = new Intent(this, LocationService.class);
-    bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
   }
 
   @Override
@@ -156,6 +157,7 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
   }
 
   private void setupControls(List<String> choices) {
+    final Context AppContext = this;
     // Selection of the spinner
     final Spinner spinner = (Spinner) findViewById(R.id.spinner);
 
@@ -174,7 +176,7 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
 
       public void onNothingSelected(AdapterView<?> arg0)
       {
-        Log.v(TAG, "nothing selected");
+        Toast.makeText(AppContext, "Nothing selected", Toast.LENGTH_LONG).show();
       }
     });
 
@@ -207,7 +209,7 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
           }
         }
         else {
-          Log.i(TAG, "onClick, but not bound to location service");
+          Toast.makeText(AppContext, "Not bound to location service", Toast.LENGTH_LONG).show();
         }
       }
     });
@@ -219,7 +221,7 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
     }
     mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
     if (mMap == null) {
-      Log.e(TAG, "Error getting map fragment");
+      Toast.makeText(this, "Error getting map fragment", Toast.LENGTH_LONG).show();
       return;
     }
     // Initialize map options
@@ -231,8 +233,7 @@ public class MainActivity extends FragmentActivity implements LocationService.Lo
     mPolyline = mMap.addPolyline(mLineOptions);
   }
 
-  @Override
-  public void clearMap() {
+  private void clearMap() {
     mMap.clear();
     if (mLocationMarker != null) {
       mLocationMarker.remove();

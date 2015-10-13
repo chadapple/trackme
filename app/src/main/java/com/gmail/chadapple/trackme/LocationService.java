@@ -50,10 +50,7 @@ public class LocationService extends Service {
     @Override
     public void run() {
       if(mMode == LocationServiceMode.MONITOR) {
-        if(mCallback != null && mMode == LocationServiceMode.MONITOR)
-        {
-          new GetPoints().execute();
-        }
+        new GetPoints().execute();
       }
       mHandler.postDelayed(mUpdateMonitor, 60000);  // every 1 minute
     }
@@ -91,16 +88,9 @@ public class LocationService extends Service {
 
   public interface LocationCallback {
     void LocationChanged(Location location);
-    void clearMap();
   }
   public class LocationServiceBinder extends Binder {
     LocationService getService() { return LocationService.this; }
-  }
-
-  /**
-   * LocationService()
-   */
-  public LocationService() {
   }
 
   /**
@@ -126,7 +116,6 @@ public class LocationService extends Service {
    */
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
-    Log.i(TAG, "onStartCommand");
     // If we get killed, after returning from here, restart
     //return START_STICKY;
     return START_NOT_STICKY;
@@ -140,11 +129,6 @@ public class LocationService extends Service {
     mUpdateMonitor.run();
   }
 
-  public LocationServiceMode getMode()
-  {
-    return mMode;
-  }
-
   public void setMode(LocationServiceMode m, String routeName)
   {
     mMode = m;
@@ -156,7 +140,7 @@ public class LocationService extends Service {
     if(mMode == LocationServiceMode.TRACK)
     {
       // Register the listener with the Location Manager to receive location updates
-      locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5 * 1000, 0, mLocationListener);
+      locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60 * 1000, 0, mLocationListener);
     }
     else if(mMode == LocationServiceMode.MONITOR)
     {
